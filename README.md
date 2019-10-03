@@ -12,7 +12,7 @@
 ### Εκτέλεση προγράμματος από το τερματικό με την παρακάτω εντολή
 
 ```
-windows --> C:\Users\jimo4\source\repos\p2015077\venv\Scripts\activate.bat
+windows --> venv\Scripts\activate.bat
 linux --> source venv/bin/activate
 ```
 
