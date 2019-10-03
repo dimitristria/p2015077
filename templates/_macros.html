@@ -1,0 +1,172 @@
+{% macro nav_menu(user) %}
+<style>
+    .avatar {
+        vertical-align: middle;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+    }
+
+    .navbar-brand {
+        padding: 0;
+    }
+
+    .navbar-nav .nav-link {
+        padding-top: 0;
+        padding-bottom: 0;
+        height: 50px;
+        line-height: 50px;
+    }
+</style>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('index') }}">StitcherApp</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
+            aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse mr-auto" id="navbarNavDropdown">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('library') }}">Library</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('stitch') }}">Stitch</a></li>
+            </ul>
+        </div>
+
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav ml-auto">
+                {% if user.is_anonymous %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Log in</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLinkProfile"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <img class="avatar" src="{{ url_for('get_image', from_dir='profile', image_name=user.image) }}"
+                                alt="{{ user.image }}">
+                            <span class="caret"></span>
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLinkProfile">
+                            <a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{{ url_for('logout') }}">Log out</a>
+                        </div>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endmacro %}
+
+
+{% macro image_template(image) %}
+<div class="col-md-3 img-check">
+    <img class="img-thumbnail" src="{{ url_for('get_image', from_dir='library', image_name=image.id+'.'+image.format) }}" alt="{{ image.name }}" style="padding: 0;">
+</div>
+{% endmacro %}
+
+
+{% macro show_images(images, endpoint) %}
+<style>
+    .checked {
+        border: 5px solid rgb(105, 255, 105);
+    }
+</style>
+
+{% if not images.items %}
+    <div class="alert alert-secondary" role="alert">
+        Empty.
+    </div>
+{% else %}
+    <div class="row">
+        {% for image in images.items %}
+            {{ image_template(image) }}
+        {% endfor %}
+    </div>
+    <br>
+    <div class="row">
+        <div class="col">     
+            <nav>
+                <ul class="pagination justify-content-center">
+                    {% if images.prev_num %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, page=images.prev_num) }}">Previous</a></li>
+                    {% endif %}
+                    {% for page in images.iter_pages(left_edge=3, right_edge=3, left_current=3, right_current=3) %}
+                        {% if page %}
+                            <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, page=page) }}">{{ page }}</a></li>
+                        {% else %}
+                            ...
+                        {% endif %}
+                    {% endfor %}
+                    {% if images.next_num %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, page=images.next_num) }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+{% endif %}
+{% endmacro %}
+
+
+{% macro show_users(users) %}
+<div class="row">
+    {% for user in users %}
+        <div class="col-md-2" style="margin: 5px 0px 5px 0px">
+            <!-- <a href="#" style="text-decoration:none;"> -->
+                <div class="card">
+                    <img class="card-img-top" src="{{ url_for('get_image', from_dir='profile', image_name=user.image) }}" alt="{{ user.image }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ user.username }}</h5>
+                    </div>
+                </div>
+            <!-- </a> -->
+        </div>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+
+{% macro terms_and_conditions() %}
+<label class="form-check-label" for="invalidCheck1">
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#exampleModalLong">
+        Terms and Conditions
+    </button>
+</label>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Terms and Conditions</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    ...
+                </p>
+                <p>
+                    Terms and Conditions
+                </p>
+                <p>
+                    ...
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}

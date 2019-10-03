@@ -1,0 +1,231 @@
+﻿{% from "_macros.html" import nav_menu, show_images with context %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+    <title>App</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='src/bootstrap.min.css') }}">
+    <link rel="stylesheet prefetch" href="{{ url_for('static', filename='src/font-awesome.min.css') }}">
+    <script src="{{ url_for('static', filename='src/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/bootstrap.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='src/roboto_slab.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</head>
+
+<body>
+    {{ nav_menu(data["user"]) }}
+
+    <br>
+
+    <div class="container">
+
+        <div class="shadow_box">
+                <h2>Upload</h2>
+                <form class="form-row justify-content-center" id="form-upload" method="POST"
+                    action="{{ url_for('library', action='upload') }}" enctype=multipart/form-data> <div class="col"
+                    id="file-upload">
+                    <input class="btn btn-primary btn-block" id="input-file" type=file name=file
+                        onchange="checkFile(5, ['png', 'jpg', 'jpeg'])" multiple>
+            </div>
+
+            <div class="col">
+                <button class="btn btn-secondary btn-block" id="btn-use-filters" type="button" data-toggle="collapse"
+                    data-target="#filters" aria-expanded="false" aria-controls="filters" disabled>
+                    Use Filters
+                </button>
+                <div class="collapse" id="filters" style="background-color: white; padding: 5px;">
+                    <div class="custom-control custom-checkbox">
+                        <input class="custom-control-input" id="eqhist" type="checkbox" value=false>
+                        <label class="custom-control-label" for="eqhist">Equalize histograms</label>
+                    </div>
+                    <div class="custom-control custom-checkbox">
+                        <input class="custom-control-input" id="autocrop" type="checkbox" value=false>
+                        <label class="custom-control-label" for="autocrop">Auto Border Crop</label>
+                    </div>
+                    <!-- <div class="custom-control custom-checkbox">
+                        <input class="custom-control-input" id="fixaspratio" type="checkbox" value=false>
+                        <label class="custom-control-label" for="fixaspratio">Fix Aspect Ratio (16:9)</label>
+                    </div> -->
+                </div>
+            </div>
+
+            <div class="col-3">
+                <button class="btn btn-success btn-block" id="btn-upload" type="submit" onclick="animateApply(this)"
+                    disabled>Upload</button>
+            </div>
+            </form>
+        </div>
+
+        <br>
+
+        <div class="shadow_box">
+            <div class="d-flex justify-content-between">
+                <h2>Gallery</h2>
+                <div class="btn-group" role="group" aria-label="none">
+                    <!-- <form class="align-middle" id="form-like" method="POST" action="{{ url_for('library', action='like') }}">
+                            <button class="btn btn-primary" id="btn-like" type="submit" onclick="animateApply(this)" disabled>Like</button>
+                        </form> -->
+                    <form class="align-middle" id="form-delete" method="POST"
+                        action="{{ url_for('library', action='delete') }}">
+                        <button class="btn btn-danger" id="btn-delete" type="submit" onclick="animateApply(this)"
+                            disabled>Delete</button>
+                    </form>
+                </div>
+            </div>
+            {{ show_images(data["all_images"], "library") }}
+        </div>
+    </div>
+
+    <br>
+
+    <script>
+        // Δημιουργία αντικειμένου div html tag με τις κλάσεις alert τις bootstrap
+        // που θα χρησιμεύσουν για την ενημερωση του χρήστη για το αρχείο προς μεταφόρτωση
+        function createAlertDiv(type, message) {
+            var alertDiv = document.createElement("div");
+            alertDiv.id = "alert-div";
+            alertDiv.classList.add("alert", "text-center", type);
+            alertDiv.role = "alert";
+            alertDiv.innerHTML = message;
+            document.getElementById("file-upload").appendChild(alertDiv)
+            return alertDiv;
+        }
+
+        var alertDiv = createAlertDiv("alert-secondary", "select images files to upload");
+
+        // Αλλαγή κατάστασης ενημερωτικού block για τη μεταφόορτωση του αρχείου
+        function changeAlertDiv(className = "alert-secondary", message = "new message") {
+            var alertDiv = document.getElementById("alert-div");
+            if (alertDiv) {
+                alertDiv.classList.remove(alertDiv.classList.item(2));
+                alertDiv.classList.add(className);
+                alertDiv.innerHTML = message;
+            }
+        }
+
+        function contains(target, pattern) {
+            var value = 0;
+            pattern.forEach(function (word) {
+                value = value + target.includes(word);
+            });
+            return (value === 1)
+        }
+
+        // Έλεγχος αρχείου ατά την επιλογή πριν το ανεβασμά του από τον εξυπηρετητή
+        function checkFile(MAX_FILE_SIZE = 3, ALLOWED_EXTENSIONS) {
+            // Ανάκτηση του ζητούμενου αρχείου
+            var files = document.getElementById("input-file").files;
+            var pfiles = [];
+            var all_files_sizes = 0;
+            for (var i = 0; i < files.length; i++) {
+                file = files.item(i);
+
+                // Υπολογισμός μεγέθους αρχείου σε megabytes
+                var file_size = Math.round((file.size / 1024 / 1024));
+                all_files_sizes += file_size;
+
+                // Σε περίπτωση που δεν ικανοποιούνται οι συνθήκες για τη μεταφόρτωση
+                // ενημερώνεται ο χρήστης για τα τυχόν λάθη, αλλιώς ειδοποιείται για να συνεχίσει επιτυχώς
+                if (file_size > MAX_FILE_SIZE || !contains(file.type, ALLOWED_EXTENSIONS)) {
+                    pfiles.push(files[i]);
+                }
+            }
+
+            var btn_upload = document.getElementById("btn-upload");
+            var btn_use_filters = document.getElementById("btn-use-filters");
+
+            if (pfiles.length > 0) {
+                changeAlertDiv("alert-warning", "please select images files only");
+                btn_upload.disabled = true;
+                btn_use_filters.disabled = true;
+            }
+            else {
+                changeAlertDiv("alert-success", "ready to upload!")
+                btn_upload.disabled = false;
+                btn_use_filters.disabled = false;
+            }
+        }
+
+        // Use filters
+        $("#eqhist").click(function () {
+            $(this).toggle(this.checked);
+        });
+        $("#autocrop").click(function () {
+            $(this).toggle(this.checked);
+        });
+
+        // Upload Images
+        $("#form-upload").submit(function (e) {
+            if ($("#autocrop").prop("checked")) {
+                $(this).attr("action", $(this).attr("action") + "&autocrop=true");
+            }
+
+            if ($("#eqhist").prop("checked")) {
+                $(this).attr("action", $(this).attr("action") + "&eqhist=true");
+            }
+
+            // if ($("#fixaspratio").prop("checked")) {
+            //     $(this).attr("action", $(this).attr("action") + "&fixaspratio=true");
+            // }
+
+            // console.log($(this).attr("action"));
+            // e.preventDefault();
+        });
+
+        // Ανάκτηση ονόματος αρχείου βάση του url του
+        function path_leaf(url) {
+            return url.split("\\").pop().split("/").pop();
+        }
+
+        var selected_images = [];
+        $(document).ready(function () {
+            // Choose Images Tab
+            $(".img-check").click(function () {
+                var img = $(this).children();
+                var img_fname = path_leaf(img[0].src);
+                if (img.hasClass("checked")) {
+                    for (var i = 0; i < selected_images.length; i++) {
+                        if (img_fname == selected_images[i]) {
+                            selected_images.splice(i, 1);
+                            break;
+                        }
+                    }
+                    img.removeClass("checked");
+
+                    // Like and delete buttons
+                    if (selected_images.length == 0) {
+                        $("#btn-like").prop("disabled", true);
+                        $("#btn-delete").prop("disabled", true);
+                    }
+                }
+                else {
+                    selected_images.push(img_fname);
+                    img.addClass("checked");
+
+                    // Like and delete buttons
+                    if (selected_images.length > 0) {
+                        $("#btn-like").prop("disabled", false);
+                        $("#btn-delete").prop("disabled", false);
+                    }
+                }
+            });
+
+            // Like Button
+            $("#form-like").submit(function () {
+                $(this).attr("action", $(this).attr("action") + "&images=" + selected_images);
+            });
+
+            // Delete Button
+            $("#form-delete").submit(function () {
+                $(this).attr("action", $(this).attr("action") + "&images=" + selected_images);
+            });
+        });
+    </script>
+</body>
+
+</html>

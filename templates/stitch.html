@@ -1,0 +1,450 @@
+﻿{% from "_macros.html" import nav_menu, show_images with context %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <title>App</title>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='src/bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='src/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/bootstrap.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='src/roboto_slab.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+
+    <style>
+        .dd-vc {
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .dd-transition {
+            transition: all 0.3s ease;
+        }
+
+        .dd-shadow {
+            box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.3);
+        }
+
+        #align-images {
+            width: 1000px;
+            margin: 20px auto 0;
+            position: relative;
+        }
+
+        .dd-slot {
+            float: left;
+            outline: 2px dashed rgba(54, 86, 132, 0.75);
+            outline-offset: -15px;
+            position: relative;
+            pointer-events: none;
+        }
+
+        .dd-slot-num {
+            text-align: center;
+            color: rgba(0, 0, 0, 0.1);
+            font-size: 40px;
+            position: absolute;
+            width: 100%;
+        }
+
+        .dd-item {
+            position: absolute;
+            left: 0;
+            top: 0;
+            box-sizing: border-box;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .dd-item.dd-disabled {
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .dd-item.dd-selected {
+            z-index: 20;
+        }
+
+        .dd-item-inner {
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .dd-item-panel {
+            width: 80%;
+            height: 35px;
+            background: #fff;
+            position: absolute;
+            left: 10%;
+            bottom: -15px;
+            z-index: 5;
+        }
+
+        .dd-item-title {
+            font-size: 15px;
+            color: #365684;
+            text-align: center;
+            line-height: 35px;
+        }
+    </style>
+</head>
+
+<body>
+    {{ nav_menu(data["user"]) }}
+
+    <br>
+
+    <div class="container">
+        <div class="shadow_box">
+            <h2>Stitch Images</h2>
+
+            <br>
+
+            {% if not data["all_images"] %}
+            <div class="alert alert-warning" role="alert">
+                Upload at least two images to start
+            </div>
+            {% else %}
+                <div class="accordion" id="accordionExample">
+                    <div class="card">
+                        <div class="card-header" id="headingOne">
+                            <h5 class="mb-0">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne"
+                                    aria-expanded="true" aria-controls="collapseOne">
+                                    1. Select Images
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne"
+                            data-parent="#accordionExample">
+                            <div class="card-body">
+                                {{ show_images(data["all_images"], "stitch") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingTwo">
+                            <h5 class="mb-0">
+                                <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
+                                    data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    2. Choose the Method
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+                            <div class="card-body">
+                                <select class="custom-select" id="method">
+                                    <option value="" selected disabled hidden>Choose here</option>
+                                    <option value="1">Automatically</option>
+                                    <option value="2">Manually</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" id="card-align-images">
+                        <div class="card-header" id="headingThree">
+                            <h5 class="mb-0">
+                                <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
+                                    data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    3. Align Images
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
+                            <div class="card-body">
+                                <div class="row" id="align-images"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <form id="form-stitch" method="POST" action="{{ url_for('stitch') }}">
+                    <button class="btn btn-success" id="btn-stitch" type="submit" disabled>Stitch</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <br>
+
+    <script>
+        // Ανάκτηση ονόματος αρχείου βάση του url του
+        function path_leaf(url) {
+            return url.split("\\").pop().split("/").pop();
+        }
+
+        // Προκαθορισμένη απόκρυψη τρίτης καρτέλας
+        $("#card-align-images").hide();
+
+        // Πίνακας με αντικείμενα εικόνες
+        var _imageLibrary = [];
+
+        // Πίνακας με τα ids των προηγούμενων εικόνων
+        var _listedImageIds = [];
+
+        ALLOWED_METHODS = [1, 2];
+
+        $(document).ready(function () {
+            // Choose Images Tab
+            $(".img-check").click(function () {
+                var obj_counter = _imageLibrary.length;
+                if (obj_counter >= 6) {
+                    alert("maximum number of images were selected");
+                }
+                else {
+                    var img = $(this).children();
+                    var img_fname = path_leaf(img[0].src);
+                    var obj = { id: img_fname, image: path_leaf(img[0].src), title: img_fname };
+                    if (img.hasClass("checked")) {
+                        for (var i = 0; i < _imageLibrary.length; i++) {
+                            if (obj.image == _imageLibrary[i].image) {
+                                _imageLibrary.splice(i, 1);
+                                break;
+                            }
+                        }
+                        for (var i = 0; i < _listedImageIds.length; i++) {
+                            if (obj.id == _listedImageIds[i]) {
+                                _listedImageIds.splice(i, 1);
+                                break;
+                            }
+                        }
+                        img.removeClass("checked");
+
+                        // Stitch button
+                        if(_listedImageIds.length <= 1 || !$("#method").val()) {
+                            $("#btn-stitch").prop("disabled", true);
+                        }
+                    }
+                    else {
+                        _imageLibrary.push(obj);
+                        _listedImageIds.push(obj.id);
+                        img.addClass("checked");
+
+                        // Stitch button
+                        if(_listedImageIds.length > 1 && $("#method").val()) {
+                            $("#btn-stitch").prop("disabled", false);
+                        }
+                    }
+                }
+            });
+
+            // Method Tab
+            $("#method").change(function () {
+                if ($(this).val() == ALLOWED_METHODS[0]) {
+                    $("#card-align-images").hide();
+                    // Stitch button
+                    if(_listedImageIds.length > 1 && $("#method").val()) {
+                        $("#btn-stitch").prop("disabled", false);
+                    }
+                }
+                else if ($(this).val() == ALLOWED_METHODS[1]) {
+                    $("#card-align-images").show();
+                    // Stitch button
+                    if(_listedImageIds.length > 1 && $("#method").val()) {
+                        $("#btn-stitch").prop("disabled", false);
+                    }
+                }
+                else {
+                    // Stitch button
+                    if(_listedImageIds.length <= 1 || !$("#method").val()) {
+                        $("#btn-stitch").prop("disabled", true);
+                    }
+                }
+            });
+
+            // Align Images Tab
+            $("#collapseThree").on("shown.bs.collapse", function () {
+                if (_imageLibrary.length > 0) {
+                    create_gallery(_imageLibrary.length);
+                }
+            });
+            $("#collapseThree").on("hidden.bs.collapse", function () {
+                if (_imageLibrary.length > 0) {
+                    $("#align-images").empty();
+                }
+            });
+
+            // Apply Button
+            $("#form-stitch").submit(function (e) {
+                // Εαν δεν υπάρχουν αρκετές εικόνες μην συνεχίσεις την αποστολή της φόρμας
+                if (_imageLibrary.length <= 1) {
+                    e.preventDefault();
+                }
+                else {
+                    $(this).attr("action", $(this).attr("action") + "?method=" + $("#method").val());
+                    var all_b_img_urls = [];
+                    if ($("#method").val() == ALLOWED_METHODS[0]) {
+                        for (var i = 0; i < _imageLibrary.length; i++) {
+                            all_b_img_urls.push(_imageLibrary[i].image);
+                        }
+                    }
+                    else if ($("#method").val() == ALLOWED_METHODS[1]) {
+                        for (var i = 0; i < _listedImageIds.length; i++) {
+                            for (var j = 0; j < _imageLibrary.length; j++) {
+                                if (_listedImageIds[i] == _imageLibrary[j].image) {
+                                    all_b_img_urls.push(_imageLibrary[j].image);
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        console.log("unknown method");
+                        e.preventDefault();
+                    }
+                    $(this).attr("action", $(this).attr("action") + "&images=" + all_b_img_urls);
+
+                    // console.log(all_b_img_urls);
+                    // e.preventDefault();
+                }
+            });
+        });
+
+        // Δημιουργία gallery με τις επιλεγμένες εικόνες
+        function create_gallery(_numOfImageSlots) {
+            var _doc = window.document;
+            var _numOfImagesPerRow = 3,
+                _imageMarginBottom = 30;
+            var _imageAspectWidth = 1920,
+                _imageAspectHeight = 1080;
+            var _imageSlots = [],
+                _selectedImageElement = null,
+                _originalImageSlot = null,
+                _originalClickCoords = null,
+                _lastTouchedSlotId = null;
+
+            function init() {
+                addImageSlots();
+                drawImages();
+                _doc.getElementById('align-images').addEventListener('mousemove', imageMousemove);
+            }
+            function addImageSlots() {
+                var i = 0,
+                    len = _numOfImageSlots,
+                    item;
+                var wrap = _doc.getElementById('align-images');
+                for (; i < len; i++) {
+                    item = _doc.createElement('div');
+                    item.setAttribute('class', 'dd-slot');
+                    item.setAttribute('style', 'width:' + (100 / _numOfImagesPerRow) + '%;padding-bottom:' + ((100 / _numOfImagesPerRow) * (_imageAspectHeight / _imageAspectWidth)) + '%;margin-bottom:' + _imageMarginBottom + 'px;');
+                    item.innerHTML = '<p class="dd-slot-num dd-vc">' + (i + 1) + '</p>';
+                    wrap.appendChild(item);
+                }
+            }
+            function drawImages() {
+                var i = 0,
+                    len = _numOfImageSlots,
+                    item;
+                var wrap = _doc.getElementById('align-images');
+                var slot = _doc.getElementsByClassName('dd-slot')[0],
+                    bounds = slot.getBoundingClientRect(),
+                    itemWidth = bounds.width,
+                    itemHeight = bounds.height;
+                var itemX, itemY;
+                var imageId, image;
+                for (; i < len; i++) {
+                    imageId = _listedImageIds[i] || -1;
+                    image = getImageById(imageId);
+                    itemX = (i % _numOfImagesPerRow) * itemWidth;
+                    itemY = Math.floor(i / _numOfImagesPerRow) * (itemHeight + _imageMarginBottom);
+                    item = _doc.createElement('div');
+                    item.setAttribute('class', 'dd-item dd-transition' + (imageId < 0 ? ' dd-disabled' : ''));
+                    item.setAttribute('data-image-id', imageId);
+                    item.setAttribute('style', 'width:' + itemWidth + 'px;height:' + itemHeight + 'px;transform:translate3d(' + itemX + 'px,' + itemY + 'px,0);');
+                    item.innerHTML = '<div class="dd-item-inner dd-shadow" style="' + (image ? ('background-image:url(library/' + image.image + ')') : '') + '"></div>'; // <div class="dd-item-panel dd-shadow"><h3 class="dd-item-title">' + (image ? image.title : '') + '</h3></div>
+                    wrap.appendChild(item);
+                    item.addEventListener('mousedown', imageMousedown);
+                    item.addEventListener('mouseup', imageMouseup);
+                    _imageSlots[i] = { width: itemWidth, height: itemHeight, x: itemX, y: itemY };
+                }
+            }
+            function arrangeItems() {
+                var i = 0,
+                    len = _listedImageIds.length,
+                    slot,
+                    ele;
+                for (; i < len; i++) {
+                    slot = _imageSlots[i];
+                    ele = _doc.querySelector('[data-image-id="' + _listedImageIds[i] + '"]');
+                    ele.style.transform = 'translate3d(' + slot.x + 'px,' + slot.y + 'px,0)';
+                }
+            }
+            function imageMousedown(event) {
+                if (!_selectedImageElement) {
+                    _selectedImageElement = event.currentTarget;
+                    _originalClickCoords = { x: event.pageX, y: event.pageY };
+                    _originalImageSlot = getIndexOfImageId(_selectedImageElement.getAttribute('data-image-id'));
+                    _selectedImageElement.classList.add('dd-selected');
+                    _selectedImageElement.classList.remove('dd-transition');
+                }
+            }
+            function imageMousemove(event) {
+                if (_selectedImageElement) {
+                    var wrap = _doc.getElementById('align-images'),
+                        bounds = wrap.getBoundingClientRect(),
+                        left = bounds.left,
+                        top = bounds.top;
+                    var pageX = event.pageX,
+                        pageY = event.pageY;
+                    var clickX = pageX - left,
+                        clickY = pageY - top,
+                        hoverSlotId = getSlotIdByCoords({ x: clickX, y: clickY });
+                    var ele = _selectedImageElement,
+                        imageId = ele.getAttribute('data-image-id'),
+                        index = _originalImageSlot,
+                        newIndex = getIndexOfImageId(imageId),
+                        x = _imageSlots[index].x,
+                        y = _imageSlots[index].y;
+                    var resultX = x + (pageX - _originalClickCoords.x),
+                        resultY = y + (pageY - _originalClickCoords.y);
+                    if (hoverSlotId != undefined && _lastTouchedSlotId != hoverSlotId) {
+                        _lastTouchedSlotId = hoverSlotId;
+                        // console.log("hoverId: " + hoverSlotId + " and index: " + index + " and newIndex: " + newIndex);
+                        _listedImageIds.splice(hoverSlotId, 0, _listedImageIds.splice(newIndex, 1)[0]);
+                        arrangeItems();
+                    }
+                    ele.style.transform = 'translate3d(' + resultX + 'px,' + resultY + 'px,0)';
+                }
+            }
+            function imageMouseup() {
+                _selectedImageElement.classList.remove('dd-selected');
+                _selectedImageElement.classList.add('dd-transition');
+                _selectedImageElement = null;
+                _originalClickCoords = null;
+                arrangeItems();
+            }
+            function getSlotIdByCoords(coords) {
+                // Get the current slot being hovered over
+                for (var id in _imageSlots) {
+                    var slot = _imageSlots[id];
+                    if (slot.x <= coords.x && coords.x <= slot.x + slot.width && slot.y <= coords.y && coords.y <= slot.y + slot.height)
+                        return id;
+                }
+            }
+            function getImageById(id) {
+                return _imageLibrary.find(function (image) {
+                    return image.id == id;
+                });
+            }
+            function getIndexOfImageId(id) {
+                var i = 0,
+                    len = _listedImageIds.length;
+                for (; i < len; i++)
+                    if (_listedImageIds[i] == id)
+                        return i;
+            }
+            init();
+        }
+    </script>
+
+</body>
+
+</html>

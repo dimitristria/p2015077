@@ -1,0 +1,44 @@
+/* styles.css */
+
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto Slab', serif;
+}
+
+body {
+    background-color:aliceblue;
+}
+
+/* label {
+    margin-bottom: 0 !important;
+} */
+
+/* .img-thumbnail {
+    padding: 0px;
+} */
+
+.zoom {
+    transition: transform .1s;
+}
+
+.zoom:hover {
+    transform: scale(1.05); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
+}
+
+.drag-elmt {
+    position: absolute;
+    cursor: move;
+    z-index: 0;
+}
+
+.drag-elmt:hover {
+    z-index: 1;
+}
+
+.shadow_box {
+    border: 1px solid black;
+    padding: 10px;
+    box-shadow: 0px 0px 5px 3px #888888;
+    background-color: whitesmoke;
+}

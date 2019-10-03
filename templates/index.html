@@ -1,0 +1,147 @@
+﻿{% from "_macros.html" import nav_menu, show_images with context %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+    <title>App</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='src/bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='src/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/bootstrap.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='src/roboto_slab.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <style>
+        .row {
+            margin-bottom: 30px;
+        }
+
+        .row:last-child {
+            margin-bottom: 0;
+        }
+
+        ol {
+            text-align: center;
+            list-style: inside;
+        }
+
+        .carousel-inner img {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    {{ nav_menu(data["user"]) }}
+
+    <br>
+
+    <div class="container">
+        {% if data["user"].is_anonymous %}
+            <div class="shadow_box">
+                <h2 class="text-center">What is image stitching?</h2>
+                <p class="text-center">Image stitching is a process of combining two or more images of the same scene into one.</p>
+                
+                <div class="row justify-content-md-center">
+                    <div class="d-flex justify-content-center">
+                        <div class="col">
+                            <img class="img-fluid" src="{{ url_for('static', filename='examples/images_stitching/111.jpg') }}" alt="111.jpg">
+                        </div>
+        
+                        <div class="col-1.5">
+                            <img class="img-fluid" src="{{ url_for('static', filename='examples/images_stitching/plus.png') }}" alt="plus.png">
+                        </div>
+        
+                        <div class="col">
+                            <img class="img-fluid" src="{{ url_for('static', filename='examples/images_stitching/222.jpg') }}" alt="222.jpg">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row justify-content-md-center">
+                        <div class="d-flex justify-content-center">
+                            <div class="col-1.5">
+                                <img class="img-fluid" src="{{ url_for('static', filename='examples/images_stitching/arrow.png') }}" alt="arrow.png">
+                            </div>
+                        </div>
+                </div>
+    
+                <div class="row justify-content-md-center">
+                    <div class="d-flex justify-content-center">
+                        <div class="col">
+                            <img class="img-fluid" src="{{ url_for('static', filename='examples/images_stitching/result.png') }}" alt="result.png">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <br>
+
+            <div class="shadow_box">
+                <h2 class="text-center">How to start?</h2>
+                <ol>
+                    <li>Make sure to <a href="{{ url_for('register') }}">register</a> or <a href="{{ url_for('login') }}">login</a> first.</li>
+                    <li>Start by uploading an image in the <a href="{{ url_for('library') }}">library</a> tab.</li>
+                    <li>Go to the <a href="{{ url_for('stitch') }}">stitch</a> tab and follow the steps to create your images.</li>
+                </ol>
+            </div>
+        {% else %}
+            <div class="shadow_box">
+                <h2 class="text-center">Welcome back <b>{{ data["user"].username }}</b> !</h2>
+            </div>
+
+            <br>
+
+            <div class="shadow_box">
+                <h2 class="text-center">Recent activity.</h2>
+
+                <br>
+
+                {% if not data['recent_stitched_images'] %}
+                    <div class="alert alert-secondary" role="alert">
+                        Nothing yet.
+                    </div>
+                {% else %}
+                    <div id="test" class="carousel slide" data-ride="carousel">
+                        <!-- Indicators -->
+                        <ul class="carousel-indicators">
+                            {% for num in range(data["recent_stitched_images"]|length) %}
+                                <li data-target="#test" data-slide-to="{{ num }}"></li>
+                            {% endfor %}
+                        </ul>
+
+                        <!-- The slideshow -->
+                        <div class="carousel-inner">
+                            {% for image in data["recent_stitched_images"] %}
+                                <div class="carousel-item">
+                                    <img class="img-fluid" src="{{ url_for('get_image', from_dir='library', image_name=image.id+'.'+image.format) }}" alt="{{ image.name }}" style="padding: 0;">
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <script>
+                            $('.carousel-indicators > li').first().addClass('active');
+                            $('.carousel-item').first().addClass('active');
+                        </script>
+
+                        <!-- Left and right controls -->
+                        <a class="carousel-control-prev" href="#test" data-slide="prev">
+                            <span class="carousel-control-prev-icon"></span>
+                        </a>
+                        <a class="carousel-control-next" href="#test" data-slide="next">
+                            <span class="carousel-control-next-icon"></span>
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <br>
+</body>
+
+</html>

@@ -1,0 +1,87 @@
+{% from "_macros.html" import nav_menu with context %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+    <title>App</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='src/bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='src/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/bootstrap.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='src/roboto_slab.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    {{ nav_menu(data["user"]) }}
+
+    <br>
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="card shadow_box" style="width: 18rem;">
+                    <img src="{{ url_for('get_image', from_dir='profile', image_name=data['user'].image) }}" class="card-img-top" alt="{{ data['user'].image }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ data["user"].username }}</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Name: {{ data["user"].name }}</li>
+                        <li class="list-group-item">Surname: {{ data["user"].surname }}</li>
+                        <li class="list-group-item">e-mail: {{ data["user"].email }}</li>
+                    </ul>
+                    <div class="card-body mx-auto">
+                        <!-- Button to Open the Modal -->
+                        <button type="button" class="btn card-link text-danger" data-toggle="modal" data-target="#deleteAccountModal">
+                            Delete Account
+                        </button>
+
+                        <!-- The Modal -->
+                        <div class="modal fade" id="deleteAccountModal">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <!-- Modal Header -->
+                                    <div class="modal-header">
+                                        <h4 class="modal-title">Account Deletion</h4>
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    </div>
+
+                                    <!-- Modal body -->
+                                    <div class="modal-body">
+                                        <p>
+                                            Are you sure that you want to delete your account?<br>
+                                            All of your content will be lost forever!
+                                        </p>
+                                    </div>
+
+                                    <!-- Modal footer -->
+                                    <div class="modal-footer">
+                                        <form action="{{ url_for('profile', action='delete') }}" method="POST">
+                                            <button class="btn btn-danger submit-do" data-dismiss="modal" type="submit">Confirm</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <br>
+
+    <script text="text/jquery">
+        $(function () {
+            $('body').on('click', '.submit-do', function (e) {
+                $(this.form).submit();
+                $('#deleteAccountModal').modal('hide');
+            });
+        });
+    </script>
+</body>
+
+</html>

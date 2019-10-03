@@ -1,0 +1,124 @@
+﻿{% from "_macros.html" import nav_menu, terms_and_conditions with context %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+    <title>App</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='src/bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='src/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/bootstrap.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='src/roboto_slab.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    {{ nav_menu(data["user"]) }}
+
+    <br>
+
+    <div class="container">
+        <div class="alert alert-warning" role="alert" style="display: none;">
+            "{{ data["username"] }}" is already in use, pick another one
+        </div>
+
+        <div class="shadow_box">
+            <h2>Register Form</h2>
+            
+            <br>
+
+            <form id="registerForm" method="POST" action="{{ url_for('register') }}">
+                <div class="form-row">
+                    <div class="col-md-4 mb-3">
+                        <label for="nameInput">Name</label>
+                        <input type="text" class="form-control" id="nameInput" name="name">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="surnameInput">Surname</label>
+                        <input type="text" class="form-control" id="surnameInput" name="surname">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="col-md-8 mb-3">
+                        <label for="emailInput">Email</label>
+                        <input type="email" class="form-control" id="emailInput" name="email">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="col-md-4 mb-3">
+                        <label for="usernameInput">Username</label>
+                        <div class="input-group">
+                            <!-- <div class="input-group-prepend">
+                                <span class="input-group-text" id="inputGroupPrepend3">@</span>
+                            </div> -->
+                            <input type="text" class="form-control" id="usernameInput" aria-describedby="inputGroupPrepend3" name="username" required>
+                            <div class="valid-feedback" id="validFeedbackUsername" style="display: none;"></div>
+                            <div class="invalid-feedback" id="invalidFeedbackUsername" style="display: none;"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="passwordInput">Password</label>
+                        <input type="password" class="form-control" id="passwordInput" name="password" aria-describedby="passwordHelpInline" required>
+                        <small id="passwordHelpInline" class="text-muted">
+                            Must be 8-20 characters long.
+                        </small>
+                    </div>
+                </div>
+                <!-- <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="invalidCheck1" required>
+                        Agree to 
+                    </div>
+                </div> -->
+                <div class="form-row">
+                    <div class="col-md-4 mb-3">
+                        <button type="submit" class="btn btn-success btn-block">Register</button>
+                    </div>
+                </div>
+            </form>
+
+            <a href="{{ url_for('login') }}">Log in</a>
+        </div>
+    </div>
+
+    <br>
+
+    <!-- <script>
+        $(document).ready(function() {
+            $("#registerForm").on("submit", function(event) {
+                $.ajax({
+                    data: {
+                        name: $("#nameInput").val(),
+                        surname: $("#surnameInput").val(),
+                        email: $("#emailInput").val(),
+                        username: $("#usernameInput").val(),
+                        password: $("#passwordInput").val()
+                    },
+                    type: "POST",
+                    url: "/register"
+                })
+                .done(function(data) {
+                    if (data.error) {
+                        $("#usernameInput").removeClass("is-valid");
+                        $("#usernameInput").addClass("is-invalid");
+                        $("#invalidFeedbackUsername").text(data.error).show();
+                        $("#validFeedbackUsername").hide();
+                    }
+                    else {
+                        $("#usernameInput").removeClass("is-invalid");
+                        $("#usernameInput").addClass("is-valid");
+                        $("#validFeedbackUsername").show();
+                        $("#invalidFeedbackUsername").hide();
+                    }
+                });
+
+                event.preventDefault();
+            });
+        });
+    </script> -->
+</body>
+
+</html>

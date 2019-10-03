@@ -1,0 +1,82 @@
+﻿{% from "_macros.html" import nav_menu with context %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+    <title>App</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='src/bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='src/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/bootstrap.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='src/roboto_slab.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    {{ nav_menu(data["user"]) }}
+
+    <br>
+
+    <div class="container">
+        <div class="alert alert-warning" id="errorAlert" role="alert" style="display: none;">
+        </div>
+
+        <div class="shadow_box">
+            <h2>Log in form</h2>
+
+            <br>
+
+            <form id="loginForm" method="POST" action="{{ url_for('login') }}">
+                <div class="form-row">
+                    <div class="col-md-4 mb-3">
+                        <label for="usernameInput">Username</label>
+                        <input type="text" class="form-control" id="usernameInput" name="username" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="col-md-4 mb-3">
+                        <label for="passwordInput">Password</label>
+                        <input type="password" class="form-control" id="passwordInput" name="password">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="col-md-4 mb-3">
+                        <button type="submit" class="btn btn-success btn-block">Log in</button>
+                    </div>
+                </div>
+            </form>
+
+            <a href="{{ url_for('register') }}">Register</a>
+        </div>
+    </div>
+
+    <!-- <script>
+        $(document).ready(function() {
+            $("#loginForm").on("submit", function(event) {
+                $.ajax({
+                    data : {
+                        username: $("#usernameInput").val(),
+                        password: $("#passwordInput").val()
+                    },
+                    type: "POST",
+                    url: "/login"
+                })
+                .done(function(data) {
+                    if (data.error) {
+                        $("#errorAlert").text(data.error).show();
+                    }
+                    else {
+                        $("#errorAlert").hide();
+                    }
+                });
+
+                event.preventDefault();
+            });
+        });
+    </script> -->
+</body>
+
+</html>

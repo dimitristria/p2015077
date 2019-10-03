@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+    <title>App</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='src/bootstrap.min.css') }}">
+    <link rel="stylesheet prefetch" href="{{ url_for('static', filename='src/font-awesome.min.css') }}">
+    <script src="{{ url_for('static', filename='src/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/bootstrap.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='src/roboto_slab.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <h2>Admin actions</h2>
+        <div class="row">
+            <div class="col">
+                1. <a href="{{ url_for('admin', action='app') }}">App</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                2. <a href="{{ url_for('admin', action='reset') }}">Reset</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                3. <a href="{{ url_for('admin', action='create_user') }}">Create User</a>
+            </div>
+        </div>
+        <!-- <div class="row">
+            <div class="col">
+                4. <a href="{{ url_for('admin', action='delete_user') }}">Delete User</a>
+            </div>
+        </div> -->
+    </div>
+
+    <br>
+</body>
+
+</html>
