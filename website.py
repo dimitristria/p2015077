@@ -105,6 +105,7 @@ class StitchedImage(db.Model):
     image_id = db.Column(db.Integer, db.ForeignKey("image.id"))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
+
 # class UserReaction(db.Model):
 #     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
 #     image_id = db.Column(db.Integer, db.ForeignKey("image.id"), primary_key=True)
