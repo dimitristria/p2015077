@@ -21,6 +21,14 @@ import stitcher
 import filters
 import interface
 
+
+try:
+    os.mkdir("data")
+    os.mkdir("data/users")
+except:
+    pass
+
+
 # Δημιουργία αντικειμένου app τύπου Flask καθώς και δημιουργία-αρχικοποίηση παραμέτρων του
 app = flask.Flask(__name__)
 app.config["DEBUG"] = False
@@ -102,6 +110,12 @@ class StitchedImage(db.Model):
 #     image_id = db.Column(db.Integer, db.ForeignKey("image.id"), primary_key=True)
 #     reaction_type = db.Column(db.String, default="like")
 #     date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+
+try:
+    db.create_all()
+except:
+    pass
 
 
 @login_manager.user_loader
@@ -589,9 +603,9 @@ def admin():
         if flask_login.current_user.is_active:
             flask_login.logout_user()
         flask_login.login_user(user)
-        path1 = "C:\\Users\\jimo4\\Downloads\\_input\\1.png"
+        path1 = r"static\examples\images_stitching\111.jpg"
         register_image(interface.path_leaf(path1), cv2.imread(path1), user)
-        path2 = "C:\\Users\\jimo4\\Downloads\\_input\\2.png"
+        path2 = r"static\examples\images_stitching\222.jpg"
         register_image(interface.path_leaf(path2), cv2.imread(path2), user)
         db.session.commit()
     return flask.render_template("admin.html")
