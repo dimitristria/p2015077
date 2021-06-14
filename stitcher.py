@@ -23,15 +23,15 @@ class Stitcher:
     """
 
     # Δημιουργία αντικειμένου KAZE για την εξαγωγή χαρακτηριστικών
-    kaze = cv2.KAZE_create()
+    sift = cv2.SIFT_create()
 
     # Παράμετροι και δημιουργία αντικειμένου cv2.FlannBasedMatcher
     # για το ταίριασμα μεταξύ των εικόνων
     FLANN_INDEX_KDTREE = 0
-    index_params = dict(algorithm=FLANN_INDEX_KDTREE)
+    index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
     search_params = dict(checks=50)
     flann = cv2.FlannBasedMatcher(index_params, search_params)
-    MATCHES_LIMIT = 10
+    MIN_MATCH_COUNT = 10
 
     def __init__(self):
         self.imgs = list()
@@ -79,7 +79,7 @@ class Stitcher:
             if not img.keypoints and not img.descriptors:
                 gray_image = cv2.cvtColor(img.image, cv2.COLOR_BGR2GRAY)
                 try:
-                    kps, descs = self.kaze.detectAndCompute(gray_image, None)
+                    kps, descs = self.sift.detectAndCompute(gray_image, None)
                 except cv2.error as e:
                     raise error.StitcherError("CV2_ERROR")
                 img.keypoints, img.descriptors = kps, descs
@@ -115,7 +115,7 @@ class Stitcher:
                 if img_j != img_i:
                     desc1, desc2 = img_i.descriptors, img_j.descriptors
                     matches = self.match_features(desc1, desc2)
-                    if not matches or len(matches) < self.MATCHES_LIMIT:
+                    if not matches or len(matches) < self.MIN_MATCH_COUNT:
                         continue
                     cand_imgs_dct[img_j] = matches
 
@@ -178,7 +178,7 @@ class Stitcher:
         """
 
         # έλεγχος για ύπαρξη επαρκών matches βάση κάποιου κατωφλιού
-        if len(matches) < self.MATCHES_LIMIT:
+        if len(matches) < self.MIN_MATCH_COUNT:
             raise error.NotEnoughMatchesError(len(matches))
 
         # Αποθηκεύουμε τις συντεταγμένες των σημείων της λίστας matches
@@ -289,11 +289,11 @@ class Stitcher:
                     # Εύρεση μετασχηματισμού προβολής μεταξύ των σημείων ενδιαφέροντος
                     M = self.get_homography(kp1, kp2, matches)
                 except error.NotEnoughMatchesError as e:
-                    continue
-                    # raise error.StitcherError(e.msg)
+                    # continue
+                    raise error.StitcherError(e.msg)
                 except error.HomographyMatrixNotFoundError as e:
-                    continue
-                    # raise error.StitcherError(e.msg)
+                    # continue
+                    raise error.StitcherError(e.msg)
 
                 # Ένωση των δύο εικόνων
                 new_img = self.connect_images(img.image, cand_img.image, M)
@@ -345,21 +345,38 @@ class Stitcher:
         Αυτοματοποιημένη μέθοδος για τη συρραφή των εικόνων, 
         προσεγγίζοντας τη μέθοδο των M. Brown and D. G. Lowe (2003)
         """
+
+        print("extract_features...")
         
         # Εξαγωγή χαρακτηριστικών από τις εικόνες εισόδου
         self.extract_features(imgs)
+
+        print("...extract_features")
 
         # Όριο υποψήφιων εικόνων που θα περιέχει κάθε εικόνα
         # 2/3 (66.66%): σχεδόν βέβαιο ότι όλες οι εικόνες που
         # ταιριάζουν πραγματικά θα ανοίκουν στην ίδια ομάδα
         self.CANDIDATE_IMAGES_LIMIT = int(len(imgs)*(2/3))
 
+        print("find_m_candidate_images_for_each_image...")
+
         self.find_m_candidate_images_for_each_image(imgs, imgs)
+
+        print("...find_m_candidate_images_for_each_image")
+
+        print("create_grouped_imgs_dct...")
+
         self.remove_noise_or_unused_imgs(imgs)
         self.NUM_OF_GROUPS = self.assign_group_on_imgs(imgs)
         self.create_grouped_imgs_dct(imgs)
 
+        print("...create_grouped_imgs_dct")
+
+        print("grouped_stitching...")
+
         results = self.grouped_stitching()
+
+        print("...grouped_stitching")
         
         # Επιστροφή συνόλων εικόνων που συρράφτηκαν
         return results
@@ -386,9 +403,9 @@ class Stitcher:
 
                 try:
                     M = self.get_homography(kp1, kp2, matches)
-                except:
+                except Exception as e:
                     interface.my_print("Unknown homography", 1)
-                    # Αφαίρεσε την εικόν με τα περισσότερα σημεία ενδιαφέροντος
+                    # Αφαίρεσε την εικόνα με τα περισσότερα σημεία ενδιαφέροντος
                     # υποψία και υπόθεση: μάλλον εικόνα με επαναλμβανόμενα στοιχεία
                     if len(kp1) > len(kp2):
                         imgs.remove(img1)
