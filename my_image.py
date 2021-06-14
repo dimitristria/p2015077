@@ -44,5 +44,5 @@ class MyImage:
         return self.__candidate_imgs
 
     @candidate_imgs.setter
-    def candidate_imgs(self, c_imgs: []):
+    def candidate_imgs(self, c_imgs: list):
         self.__candidate_imgs = c_imgs

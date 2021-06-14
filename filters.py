@@ -265,6 +265,15 @@ def equalize_histograms(img: numpy.ndarray, automatic=False, channels=None):
     return new_img
 
 
+def equalize_hist(img: numpy.ndarray):
+    ycrcb = cv2.cvtColor(img,cv2.COLOR_BGR2YCR_CB)
+    channels = cv2.split(ycrcb)
+    cv2.equalizeHist(channels[0],channels[0])
+    cv2.merge(channels,ycrcb)
+    cv2.cvtColor(ycrcb,cv2.COLOR_YCR_CB2BGR,img)
+    return img
+
+
 # def fix_aspect_ratio(img: numpy.ndarray, ideal_height=768, ideal_width=1366):
 #     height, width = img.shape[:2]
 #     aspect = width / float(height)
@@ -311,7 +320,7 @@ def filter_image(img: numpy.ndarray, autocrop=False, eqhist=False, fixaspratio=F
         # img[:,:,2] = cv2.equalizeHist(img[:,:,2])
 
         # filters.equalize_histograms
-        img = equalize_histograms(img)
+        img = equalize_hist(img)
 
     # if fixaspratio:
     #     img = fix_aspect_ratio(img)

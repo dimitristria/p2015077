@@ -2,11 +2,9 @@
 Κώδικας για την ιστοσελίδα της εφαρμογής
 """
 
-import io
 import os
 import os.path
 import shutil
-import re
 import datetime
 import werkzeug.utils
 import werkzeug.datastructures
@@ -205,7 +203,7 @@ def register_image(filename: str, img: numpy.ndarray, user: User, commit=False):
 #         db.session.add(ur)
 #         if commit:
 #             db.session.commit()
-#     except sqlalchemy.exc.IntegrityError:
+#     except Exception as e:
 #         return None
 #     return ur
 
@@ -276,7 +274,8 @@ def library():
                     if autocrop == "true":
                         opencv_image = filters.automatic_cropping(opencv_image)
                     if eqhist == "true":
-                        opencv_image = filters.equalize_histograms(opencv_image)
+                        # opencv_image = filters.equalize_histograms(opencv_image)
+                        opencv_image = filters.equalize_hist(opencv_image)
                     # if fixaspratio == "true":
                     #     opencv_image = filters.fix_aspect_ratio(opencv_image)
                     
@@ -391,7 +390,7 @@ def register_user(username, name=None, surname=None, email=None, password=None, 
 
     try:
         db.session.add(user)
-    except sqlalchemy.exc.IntegrityError:
+    except Exception as e:
         interface.my_print("User: '" + username + "' already exists!", 1)
         return None
 
@@ -589,9 +588,9 @@ def admin():
         if flask_login.current_user.is_active:
             flask_login.logout_user()
         flask_login.login_user(user)
-        path1 = "C:\\Users\\jimo4\\Downloads\\_input\\1.png"
+        path1 = r"tests\input\IMG_20181128_140648.jpg"
         register_image(interface.path_leaf(path1), cv2.imread(path1), user)
-        path2 = "C:\\Users\\jimo4\\Downloads\\_input\\2.png"
+        path2 = r"tests\input\IMG_20181128_140656.jpg"
         register_image(interface.path_leaf(path2), cv2.imread(path2), user)
         db.session.commit()
     return flask.render_template("admin.html")

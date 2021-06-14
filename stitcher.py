@@ -95,6 +95,7 @@ class Stitcher:
         if matches:
             # Διάλεξε τo καλύτερο γειτονικό σημείο από τα k υποψήφια
             # κάθε υπολίστας στη λίστα matches βάση κάποιου φίλτρου
+            # γνωστό ως και το "Lowe's ratio test".
             for m, n in matches:
                 if m.distance < 0.7 * n.distance:
                     good_matches += (m,)
@@ -309,7 +310,7 @@ class Stitcher:
                 self.extract_features([new_img])
                 new_img.group = img.group
                 # Σύγκρισή της με τις υπόλοιπές
-                new_img.candidate_imgs = self.find_m_candidate_images_for_each_image([new_img], imgs)
+                # new_img.candidate_imgs = self.find_m_candidate_images_for_each_image([new_img], imgs)
 
                 # Προσθήκη της νέας εικόνας στην λίστα με τις 
                 # τρέχουσες και διακοπή αναζήτησης των υποψήφιων 
@@ -319,7 +320,9 @@ class Stitcher:
             c += 1
         
         # Αυτόματη αποκοπή ανώφελων ορίων εικόνας από τους μετασχηματισμούς που προηγήθηκαν
-        imgs[0].image = filters.automatic_cropping(imgs[0].image)
+        # imgs[0].image = filters.automatic_cropping(imgs[0].image)
+
+        # imgs[0].image = filters.equalize_hist(imgs[0].image)
 
         # Επιστροφή της παραγόμενης καθώς και των ονομάτων των πηγαίων εικόνων της
         return (imgs[0].image, src_imgs_filenames)
@@ -346,37 +349,35 @@ class Stitcher:
         προσεγγίζοντας τη μέθοδο των M. Brown and D. G. Lowe (2003)
         """
 
-        print("extract_features...")
+        print("extract_features...", end=" ")
         
         # Εξαγωγή χαρακτηριστικών από τις εικόνες εισόδου
         self.extract_features(imgs)
 
-        print("...extract_features")
+        print("done!")
 
         # Όριο υποψήφιων εικόνων που θα περιέχει κάθε εικόνα
         # 2/3 (66.66%): σχεδόν βέβαιο ότι όλες οι εικόνες που
         # ταιριάζουν πραγματικά θα ανοίκουν στην ίδια ομάδα
         self.CANDIDATE_IMAGES_LIMIT = int(len(imgs)*(2/3))
 
-        print("find_m_candidate_images_for_each_image...")
+        print("find_m_candidate_images_for_each_image...", end=" ")
 
         self.find_m_candidate_images_for_each_image(imgs, imgs)
 
-        print("...find_m_candidate_images_for_each_image")
-
-        print("create_grouped_imgs_dct...")
+        print("done!")
+        print("create_grouped_imgs_dct...", end=" ")
 
         self.remove_noise_or_unused_imgs(imgs)
         self.NUM_OF_GROUPS = self.assign_group_on_imgs(imgs)
         self.create_grouped_imgs_dct(imgs)
 
-        print("...create_grouped_imgs_dct")
-
-        print("grouped_stitching...")
+        print("done!")
+        print("grouped_stitching...", end=" ")
 
         results = self.grouped_stitching()
 
-        print("...grouped_stitching")
+        print("done!")
         
         # Επιστροφή συνόλων εικόνων που συρράφτηκαν
         return results
@@ -386,8 +387,13 @@ class Stitcher:
         Μη αυτοματοποιημένη μέθοδος για τη συρραφή των εικόνων
         """
 
+        print("extract_features...", end=" ")
+
         # Εξαγωγή χαρακτηριστικών από τις εικόνες εισόδου
         self.extract_features(imgs)
+
+        print("done!")
+        print("other...", end=" ")
 
         # [print(interface.path_leaf(img.name), len(img.keypoints)) for img in imgs]
 
@@ -416,12 +422,16 @@ class Stitcher:
                 new_img = self.connect_images(img1.image, img2.image, M)
                 src_imgs_filenames += (interface.path_leaf(img1.name),)
                 src_imgs_filenames += (interface.path_leaf(img2.name),)
-                new_img = filters.automatic_cropping(new_img)
+                # new_img = filters.automatic_cropping(new_img)
+                
                 imgs[0].image = new_img
+                
                 imgs.remove(imgs[1])
                 c += 1
             except:
                 break
+        
+        print("done!")
         
         results = ((imgs[0].image, src_imgs_filenames),)
         return results
