@@ -8,6 +8,13 @@
 
 ---
 
+## Τεχνολογίες που χρησιμοποιήθηκαν
+
+* Backend: Python, Flask, OpenCV
+* Frontend: HTML, Bootstrap, Javascript
+
+---
+
 ## Εγκατάσταση προαπαιτούμενων βιβλιοθηκών της γλώσσας Python
 
 ```
