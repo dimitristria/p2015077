@@ -320,7 +320,7 @@ class Stitcher:
             c += 1
         
         # Αυτόματη αποκοπή ανώφελων ορίων εικόνας από τους μετασχηματισμούς που προηγήθηκαν
-        # imgs[0].image = filters.automatic_cropping(imgs[0].image)
+        imgs[0].image = filters.automatic_cropping(imgs[0].image)
 
         # imgs[0].image = filters.equalize_hist(imgs[0].image)
 
@@ -422,7 +422,7 @@ class Stitcher:
                 new_img = self.connect_images(img1.image, img2.image, M)
                 src_imgs_filenames += (interface.path_leaf(img1.name),)
                 src_imgs_filenames += (interface.path_leaf(img2.name),)
-                # new_img = filters.automatic_cropping(new_img)
+                new_img = filters.automatic_cropping(new_img)
                 
                 imgs[0].image = new_img
                 
