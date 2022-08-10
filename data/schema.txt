@@ -1,5 +1,0 @@
-user<->image            (one-to-many)
-user<->userreaction     (one-to-many)
-user<->userreaction	    (one-to-many)
-image<->stichedimage	(one-to-one)
-image<->stichedimage	(many-to-many)	=> new table "source_images"
