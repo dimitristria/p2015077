@@ -23,7 +23,7 @@ class Stitcher:
     """
 
     # Δημιουργία αντικειμένου KAZE για την εξαγωγή χαρακτηριστικών
-    sift = cv2.SIFT_create()
+    kaze = cv2.KAZE_create()
 
     # Παράμετροι και δημιουργία αντικειμένου cv2.FlannBasedMatcher
     # για το ταίριασμα μεταξύ των εικόνων
@@ -79,7 +79,7 @@ class Stitcher:
             if not img.keypoints and not img.descriptors:
                 gray_image = cv2.cvtColor(img.image, cv2.COLOR_BGR2GRAY)
                 try:
-                    kps, descs = self.sift.detectAndCompute(gray_image, None)
+                    kps, descs = self.kaze.detectAndCompute(gray_image, None)
                 except cv2.error as e:
                     raise error.StitcherError("CV2_ERROR")
                 img.keypoints, img.descriptors = kps, descs
