@@ -15,7 +15,7 @@
 
 ---
 
-## Τεχνολογίες που χρησιμοποιήθηκαν
+## Τεχνολογίες
 
 * Backend: Python, Flask, OpenCV
 * Frontend: HTML, Bootstrap, Javascript
