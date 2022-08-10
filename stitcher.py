@@ -12,8 +12,8 @@ import interface
 import error
 
 
-AUTOMATICALLY = 1
-MANUALLY = 2
+AUTOMATICALLY = "automatically"
+MANUALLY = "manually"
 ALLOWED_METHODS = (AUTOMATICALLY, MANUALLY)
 
 
