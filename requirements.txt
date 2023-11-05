@@ -11,4 +11,4 @@ names==0.3.0
 numpy==1.23.1
 opencv-python==4.6.0.66
 SQLAlchemy==1.4.40
-Werkzeug==2.2.2
+Werkzeug==3.0.1
